@@ -1,98 +1,165 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
+import React from 'react';
+import { StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Linking, Text } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors } from '@/constants/theme';
+import { useFonts, NotoSans_400Regular, NotoSans_600SemiBold } from '@expo-google-fonts/noto-sans';
+import { TiltWarp_400Regular } from '@expo-google-fonts/tilt-warp';
+
+interface SnippetItem {
+  title: string;
+  onPress: () => void;
+  isSpecial?: boolean;
+  specialText?: string;
+}
+
+const snippetItems: SnippetItem[] = [
+  {
+    title: 'Calendar',
+    onPress: () => Linking.openURL('https://google.com'),
+    isSpecial: true,
+    specialText: 'You can book a 30-minute call with me here calendly.com/wisprflow'
+  },
+  {
+    title: 'Hours',
+    onPress: () => console.log('Hours pressed')
+  },
+  {
+    title: 'Support intro',
+    onPress: () => console.log('Support intro pressed')
+  },
+  {
+    title: 'FAQ',
+    onPress: () => console.log('FAQ pressed')
+  },
+  {
+    title: 'Careers link',
+    onPress: () => console.log('Careers link pressed')
+  },
+  {
+    title: 'Elevator pitch',
+    onPress: () => console.log('Elevator pitch pressed')
+  }
+];
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  // Load custom fonts
+  const [fontsLoaded] = useFonts({
+    NotoSans_400Regular,
+    NotoSans_600SemiBold,
+    TiltWarp_400Regular,
+  });
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
+  // Force dark theme to match the design / Yay
+  const isDark = true;
+  
+  if (!fontsLoaded) {
+    return null; // or a loading spinner
+  }
+  
+  return (
+    <SafeAreaView style={[styles.container, { backgroundColor: '#2C2C2C' }]}>
+      <ThemedView style={styles.header}>
+        <Text style={styles.title}>Your Snippets</Text>
+        <TouchableOpacity style={styles.addButton} onPress={() => console.log('Add pressed')}>
+          <Text style={styles.addButtonText}>+</Text>
+        </TouchableOpacity>
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {snippetItems.map((item, index) => (
+          <TouchableOpacity key={index} onPress={item.onPress} activeOpacity={0.7}>
+            <ThemedView style={styles.snippetCard}>
+              <Text style={styles.snippetTitle}>{item.title}</Text>
+            </ThemedView>
+            
+            {item.isSpecial && item.specialText && (
+              <ThemedView style={styles.specialCallout}>
+                <ThemedView style={styles.arrow} />
+                <Text style={styles.specialText}>{item.specialText}</Text>
+              </ThemedView>
+            )}
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    flex: 1,
+  },
+  header: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 8,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    paddingBottom: 30,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  title: {
+    fontSize: 32,
+    fontFamily: 'TiltWarp_400Regular',
+    color: '#FFFFFF',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
+  addButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#666',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addButtonText: {
+    fontSize: 24,
+    fontWeight: '300',
+    color: '#fff',
+  },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+  snippetCard: {
+    borderWidth: 2,
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 16,
+    backgroundColor: 'transparent',
+    borderColor: '#666',
+  },
+  snippetTitle: {
+    fontSize: 18,
+    fontFamily: 'NotoSans_600SemiBold',
+    color: '#FFFFFF',
+  },
+  specialCallout: {
+    backgroundColor: '#FF9500',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: -8,
+    marginBottom: 16,
+    marginLeft: 40,
+    position: 'relative',
+  },
+  arrow: {
     position: 'absolute',
+    top: -8,
+    left: 20,
+    width: 0,
+    height: 0,
+    borderLeftWidth: 8,
+    borderRightWidth: 8,
+    borderBottomWidth: 8,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: '#FF9500',
+  },
+  specialText: {
+    fontSize: 16,
+    color: '#000',
+    fontFamily: 'NotoSans_400Regular',
+    lineHeight: 22,
   },
 });
